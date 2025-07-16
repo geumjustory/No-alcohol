@@ -223,9 +223,12 @@ function moveItems() {
   }
 }
 function checkCollisions() {
+  // scaleV(30) 반복 캐싱
+  const collisionDist = scaleV(30);
+
   for (let i=enemies.length-1; i>=0; --i) {
     let e = enemies[i];
-    if (Math.abs(ladybug.x - e.x) < scaleV(30) && Math.abs(ladybug.y - e.y) < scaleV(30)) {
+    if (Math.abs(ladybug.x - e.x) < collisionDist && Math.abs(ladybug.y - e.y) < collisionDist) {
       if (shield) {
         enemies.splice(i,1);
         shield = false;
@@ -238,7 +241,7 @@ function checkCollisions() {
   }
   for (let i=items.length-1; i>=0; --i) {
     let it = items[i];
-    if (Math.abs(ladybug.x - it.x) < scaleV(30) && Math.abs(ladybug.y - it.y) < scaleV(30)) {
+    if (Math.abs(ladybug.x - it.x) < collisionDist && Math.abs(ladybug.y - it.y) < collisionDist) {
       if (it.type === 'shield') {
         shield = true;
         shieldTimer = Date.now();
@@ -449,6 +452,7 @@ function get_spawn_chance(sobriety) {
 }
 document.addEventListener('keydown', e => keys[e.key]=true);
 document.addEventListener('keyup', e => keys[e.key]=false);
+// ==== update 함수 - "적 39마리 제한" 여기 반영 ====
 function update() {
   if (gameOver) {
     bgm.pause();
@@ -472,7 +476,10 @@ function update() {
   ladybug.x = Math.max(0, Math.min(WIDTH - ladybug.size, ladybug.x));
   ladybug.y = Math.max(0, Math.min(HEIGHT - ladybug.size * 2, ladybug.y));
   let currentSpawnChance = get_spawn_chance(sobriety);
-  if (Math.random() < 1/currentSpawnChance) enemies.push(newEnemy());
+
+  // ==== 적 39마리 제한 추가 ====
+  if (enemies.length < 39 && Math.random() < 1/currentSpawnChance) enemies.push(newEnemy());
+
   let itemSpawnRate = itemSpawnRateInit + Math.max(0, Math.min(sobriety, 4000)) * itemSpawnRateIncrease;
   if (Math.random() < itemSpawnRate) items.push(newItem());
   moveEnemies();
